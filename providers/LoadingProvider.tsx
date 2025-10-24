@@ -21,14 +21,26 @@ export const LoadingProvider = ({
   children: React.ReactNode;
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2500);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
+
+  // ⚠️ CRÍTICO: Não renderizar nada até montar no cliente
+  if (!isMounted) {
+    return (
+      <LoadingContext.Provider value={{ isLoading: true, setIsLoading }}>
+        <div className="min-h-screen bg-black" />
+      </LoadingContext.Provider>
+    );
+  }
 
   return (
     <LoadingContext.Provider value={{ isLoading, setIsLoading }}>

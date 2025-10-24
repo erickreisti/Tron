@@ -101,6 +101,7 @@ export const SimpleTechCursor = () => {
     };
   }, [isClient]);
 
+  // ⚠️ IMPORTANTE: Não renderizar no servidor
   if (!isClient) {
     return null;
   }
