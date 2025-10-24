@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const SimpleLoading = () => {
   const loadingRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (!loadingRef.current) return;
@@ -16,7 +17,22 @@ export const SimpleLoading = () => {
         // Timeline principal
         const masterTL = gsap.timeline();
 
-        // 1. Sistema de inicialização
+        // 1. ANIMAÇÃO DA BARRA DE PROGRESSO PRIMEIRO
+        const progressAnimation = gsap.to(".progress-bar", {
+          scaleX: 1,
+          duration: 2.5,
+          ease: "power2.inOut",
+          onUpdate: function () {
+            // Atualiza a porcentagem baseada no progresso da animação
+            const currentProgress = Math.round(this.progress() * 100);
+            setProgress(currentProgress);
+          },
+          onComplete: function () {
+            setProgress(100); // Garante 100% no final
+          },
+        });
+
+        // 2. Sistema de inicialização
         masterTL
           // Grid Tron aparecendo
           .fromTo(
@@ -66,17 +82,6 @@ export const SimpleLoading = () => {
             },
             "-=0.3"
           )
-          // Barra de progresso
-          .fromTo(
-            ".progress-bar",
-            { scaleX: 0 },
-            {
-              scaleX: 1,
-              duration: 2.5,
-              ease: "power2.inOut",
-            },
-            "-=0.5"
-          )
           // Partículas de dados
           .fromTo(
             ".data-stream",
@@ -91,7 +96,7 @@ export const SimpleLoading = () => {
             "-=1.5"
           );
 
-        // 2. Animações contínuas
+        // 3. Animações contínuas
         // Rotação do processador
         gsap.to(".core-processor", {
           rotation: 360,
@@ -252,13 +257,13 @@ export const SimpleLoading = () => {
           ))}
         </div>
 
-        {/* Barra de Progresso Avançada */}
+        {/* Barra de Progresso Avançada - AGORA FUNCIONANDO */}
         <div className="w-80 max-w-full px-8">
           <div className="relative">
             {/* Track da barra */}
             <div className="h-3 bg-slate-800/50 rounded-full border border-cyan-400/20 overflow-hidden backdrop-blur-sm">
               {/* Barra de progresso animada */}
-              <div className="progress-bar h-full bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 rounded-full relative overflow-hidden">
+              <div className="progress-bar h-full bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 rounded-full relative overflow-hidden transform origin-left scale-x-0">
                 {/* Efeito de brilho */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
 
@@ -271,13 +276,13 @@ export const SimpleLoading = () => {
               </div>
             </div>
 
-            {/* Texto de porcentagem */}
+            {/* Texto de porcentagem - AGORA DINÂMICO */}
             <div className="flex justify-between mt-2">
               <span className="text-cyan-400 font-mono text-xs">
                 BOOT_SEQUENCE
               </span>
               <span className="text-cyan-300 font-mono text-xs font-bold">
-                87%
+                {progress}%
               </span>
             </div>
           </div>
@@ -286,9 +291,21 @@ export const SimpleLoading = () => {
         {/* Status do Sistema */}
         <div className="mt-8 flex space-x-6">
           {[
-            { text: "MEMORY", status: "OK", color: "text-green-400" },
-            { text: "PROCESSOR", status: "ACTIVE", color: "text-blue-400" },
-            { text: "NETWORK", status: "SYNC", color: "text-cyan-400" },
+            {
+              text: "MEMORY",
+              status: progress >= 25 ? "OK" : "LOADING",
+              color: progress >= 25 ? "text-green-400" : "text-yellow-400",
+            },
+            {
+              text: "PROCESSOR",
+              status: progress >= 50 ? "ACTIVE" : "BOOTING",
+              color: progress >= 50 ? "text-blue-400" : "text-yellow-400",
+            },
+            {
+              text: "NETWORK",
+              status: progress >= 75 ? "SYNC" : "CONNECTING",
+              color: progress >= 75 ? "text-cyan-400" : "text-yellow-400",
+            },
           ].map((item, index) => (
             <div key={index} className="text-center">
               <div className="text-cyan-500 font-mono text-xs">{item.text}</div>
